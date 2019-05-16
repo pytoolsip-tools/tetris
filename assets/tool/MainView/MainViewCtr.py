@@ -10,6 +10,10 @@ from _Global import _GG;
 
 from MainViewUI import *;
 
+CurPath = os.path.dirname(os.path.realpath(__file__)); # 当前文件目录
+
+require(GetPathByRelativePath("../", CurPath), "_load"); # 加载逻辑
+
 def getRegisterEventMap(G_EVENT):
 	return {
 		# G_EVENT.TO_UPDATE_VIEW : "updateView",
