@@ -2,7 +2,7 @@
 # @Author: JinZhang
 # @Date:   2019-05-16 18:33:42
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-05-16 18:33:42
+# @Last Modified time: 2019-05-17 15:44:05
 import os;
 import wx;
 
@@ -10,9 +10,15 @@ from _Global import _GG;
 
 from TetrisViewUI import *;
 
+CurPath = os.path.dirname(os.path.realpath(__file__)); # 当前文件目录
+
+EventID = require(GetPathByRelativePath("../../config", CurPath), "EventId", "EVENT_ID");
+
 def getRegisterEventMap(G_EVENT):
 	return {
-		# G_EVENT.TO_UPDATE_VIEW : "updateView",
+		EventID.KEY_LEFT_EVENT : "updateDirection",
+		EventID.KEY_RIGHT_EVENT : "updateDirection",
+		EventID.KEY_DOWN_EVENT : "updateDirection",
 	};
 
 class TetrisViewCtr(object):
@@ -90,3 +96,78 @@ class TetrisViewCtr(object):
 			
 	def updateView(self, data):
 		self.__ui.updateView(data);
+
+	def updateDirection(self, data):
+		direction = Direction.LEFT;
+		if data["hotKey"] == "UP":
+			direction = Direction.TOP;
+		elif data["hotKey"] == "RIGHT":
+			direction = Direction.RIGHT;
+		elif data["hotKey"] == "DOWN":
+			direction = Direction.BOTTOM;
+		self.getUI().moveItemList(direction);
+
+	def getMovingItemMtList(self, startPos, key = None):
+		if not key:
+			key = random.choice(["I", "J", "L", "O", "S", "Z", "T"]);
+		if key == "I":
+			return [
+				(startPos[0]-3, startPos[1]),
+				(startPos[0]-2, startPos[1]),
+				(startPos[0]-1, startPos[1]),
+				(startPos[0], startPos[1])
+			];
+		elif key == "J":
+			return [
+				(startPos[0]-2, startPos[1]),
+				(startPos[0]-1, startPos[1]),
+				(startPos[0], startPos[1]),
+				(startPos[0], startPos[1]-1),
+			];
+		elif key == "L":
+			return [
+				(startPos[0]-2, startPos[1]),
+				(startPos[0]-1, startPos[1]),
+				(startPos[0], startPos[1]),
+				(startPos[0], startPos[1]+1),
+			];
+		elif key == "O":
+			return [
+				(startPos[0]-1, startPos[1]),
+				(startPos[0]-1, startPos[1]+1),
+				(startPos[0], startPos[1]),
+				(startPos[0], startPos[1]+1),
+			];
+		elif key == "S":
+			return [
+				(startPos[0]-1, startPos[1]+1),
+				(startPos[0]-1, startPos[1]),
+				(startPos[0], startPos[1]),
+				(startPos[0], startPos[1]-1),
+			];
+		elif key == "Z":
+			return [
+				(startPos[0]-1, startPos[1]-1),
+				(startPos[0]-1, startPos[1]),
+				(startPos[0], startPos[1]),
+				(startPos[0], startPos[1]+1),
+			];
+		elif key == "T":
+			return [
+				(startPos[0]-1, startPos[1]-1),
+				(startPos[0]-1, startPos[1]),
+				(startPos[0]-1, startPos[1]+1),
+				(startPos[0], startPos[1]),
+			];
+		raise Exception("Error key[{}]".format(key));
+
+	def startGame(self):
+		self.getUI().startGame();
+
+	def pauseGame(self):
+		self.getUI().pauseGame();
+
+	def isRunning(self):
+		if self.getUI().isPlaying() and self.getUI().isRunningTimer():
+			return True;
+		return False;

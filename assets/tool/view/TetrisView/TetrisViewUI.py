@@ -2,12 +2,21 @@
 # @Author: JinZhang
 # @Date:   2019-05-16 18:33:42
 # @Last Modified by:   JinZhang
-# @Last Modified time: 2019-05-16 18:33:42
+# @Last Modified time: 2019-05-17 16:32:03
 
 import wx;
+import random, math;
+from enum import Enum, unique;
 
 from _Global import _GG;
 from function.base import *;
+
+@unique
+class Direction(Enum):
+	LEFT = 0;
+	TOP = 1;
+	RIGHT = 2;
+	BOTTOM = 3;
 
 class TetrisViewUI(wx.Panel):
 	"""docstring for TetrisViewUI"""
@@ -59,9 +68,9 @@ class TetrisViewUI(wx.Panel):
 
 	# 初始化固定方块矩阵
 	def __initFixedItemMatrix(self):
-		for i in range(self.params_["matrix"][0]):
+		for i in range(self.__params["matrix"][0]):
 			fixedItemList = [];
-			for j in range(self.params_["matrix"][1]):
+			for j in range(self.__params["matrix"][1]):
 				fixedItemList.append(None);
 			self.__fixedItemMatrix.append(fixedItemList); # 已固定的方块矩阵
 
@@ -80,8 +89,8 @@ class TetrisViewUI(wx.Panel):
 		self.moveItemList();
 
 	def getItemSize(self):
-		rows, cols = self.params_["matrix"][0], self.params_["matrix"][1];
-		return wx.Size(self.params_["size"][0]/cols, self.params_["size"][1]/rows);
+		rows, cols = self.__params["matrix"][0], self.__params["matrix"][1];
+		return wx.Size(self.__params["size"][0]/cols, self.__params["size"][1]/rows);
 
 	def createItem(self):
 		return wx.Panel(self, size = self.getItemSize(), style = wx.BORDER_THEME);
@@ -113,11 +122,11 @@ class TetrisViewUI(wx.Panel):
 	# 创建移动方块
 	def createMovingItemList(self):
 		self.__movingItemList = [];
-		col = int(self.params_["matrix"][1]/2);
-		itemMtList = getMovingItemMtList((0, col));
+		col = int(self.__params["matrix"][1]/2);
+		itemMtList = self.getCtr().getMovingItemMtList((0, col));
 		for itemMt in itemMtList:
 			item = self.createItem();
-			item.SetBackgroundColour(self.params_["squareColour"]);
+			item.SetBackgroundColour(self.__params["squareColour"]);
 			self.moveItem(item, *itemMt);
 			self.__movingItemList.append(item);
 
@@ -141,7 +150,7 @@ class TetrisViewUI(wx.Panel):
 					col-=1;
 				elif direction == Direction.RIGHT:
 					col+=1;
-				rows, cols = self.params_["matrix"][0], self.params_["matrix"][1];
+				rows, cols = self.__params["matrix"][0], self.__params["matrix"][1];
 				if row >= rows or col < 0 or col >= cols:
 					return False;
 				elif row >= 0 and self.__fixedItemMatrix[row][col]:
@@ -152,7 +161,7 @@ class TetrisViewUI(wx.Panel):
 	# 消除方块
 	def eliminateSquares(self):
 		eliminateCount = 0;
-		rows, cols = self.params_["matrix"][0], self.params_["matrix"][1];
+		rows, cols = self.__params["matrix"][0], self.__params["matrix"][1];
 		# 逐行消除
 		for i in range(rows-1, -1, -1):
 			squareCount = 0;
@@ -183,7 +192,7 @@ class TetrisViewUI(wx.Panel):
 			centerRow, centerCol = self.__movingItemList[1].m_mt;
 			angle = -math.pi/2;
 			sinVal, cosVal = int(math.sin(angle)), int(math.cos(angle));
-			rows, cols = self.params_["matrix"][0], self.params_["matrix"][1];
+			rows, cols = self.__params["matrix"][0], self.__params["matrix"][1];
 			for item in self.__movingItemList:
 				row, col = item.m_mt;
 				newRow = centerRow + (row - centerRow) * cosVal - (col - centerCol) * sinVal;
@@ -210,8 +219,27 @@ class TetrisViewUI(wx.Panel):
 		msgDialog = wx.MessageDialog(self, "游戏结束！", "游戏结束", style = wx.OK|wx.ICON_INFORMATION);
 		msgDialog.ShowModal();
 
+	def resetFixedItemMt(self):
+		for items in self.__fixedItemMatrix:
+			for i in range(len(items)):
+				if items[i]:
+					items[i].Destroy();
+					items[i] = None;
+
 	def startGame(self, event = None):
 		if not self.__playing:
-			self.__playing = True;
+			self.resetFixedItemMt();
 			self.createMovingItemList();
+			self.__playing = True;
+		if not self.__timer.IsRunning():
 			self.startTimer();
+
+	def pauseGame(self, event = None):
+		if self.__playing:
+			self.stopTimer();
+
+	def isPlaying(self):
+		return self.__playing;
+
+	def isRunningTimer(self):
+		return self.__timer.IsRunning();
