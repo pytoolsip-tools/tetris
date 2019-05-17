@@ -103,6 +103,7 @@ class TetrisViewUI(wx.Panel):
 	# 移动方块
 	def moveItemList(self, direction = Direction.BOTTOM):
 		if self.__playing:
+			self.SetFocusFromKbd(); # 移动时，重新对焦self
 			if self.checkDirection(direction):
 				for item in self.__movingItemList:
 					row, col = item.m_mt;

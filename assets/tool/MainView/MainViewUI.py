@@ -116,8 +116,8 @@ class MainViewUI(wx.ScrolledWindow):
 		self.contentPanel = wx.Panel(self, size = (600, max(600, self.GetSize().y)), style = wx.BORDER_THEME);
 		self.contentPanel.SetBackgroundColour(wx.Colour(0,0,0));
 		self.getCtr().createCtrByKey("TetrisViewCtr", GetPathByRelativePath("../view/TetrisView", self._curPath), parent = self.contentPanel, params = {
-			"size" : (360,580),
-			"matrix" : (29,18),
+			"size" : (320,600),
+			"matrix" : (30,16),
 		});
 		self.updateContentPanelSize();
 		self.initContentPanelLayout();
