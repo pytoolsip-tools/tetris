@@ -134,6 +134,7 @@ class TetrisViewUI(wx.Panel):
 	def setFixedItemMatrix(self, itemList = []):
 		if len(itemList) == 0:
 			itemList = self.__movingItemList;
+			self.__movingItemList = [];
 		for item in itemList:
 			row, col = item.m_mt;
 			if row > 0:
@@ -226,9 +227,13 @@ class TetrisViewUI(wx.Panel):
 					items[i].Destroy();
 					items[i] = None;
 
+	def resetMovingItemList(self):
+		for item in self.__movingItemList:
+			item.Destroy();
+		self.__movingItemList = [];
+
 	def startGame(self, event = None):
 		if not self.__playing:
-			self.resetFixedItemMt();
 			self.createMovingItemList();
 			self.__playing = True;
 		if not self.__timer.IsRunning():
@@ -243,3 +248,9 @@ class TetrisViewUI(wx.Panel):
 
 	def isRunningTimer(self):
 		return self.__timer.IsRunning();
+
+	def stopGame(self, event = None):
+		self.stopTimer();
+		self.resetFixedItemMt();
+		self.resetMovingItemList();
+		self.__playing = False;

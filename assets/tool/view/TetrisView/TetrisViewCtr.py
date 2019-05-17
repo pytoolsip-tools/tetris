@@ -17,8 +17,10 @@ EventID = require(GetPathByRelativePath("../../config", CurPath), "EventId", "EV
 def getRegisterEventMap(G_EVENT):
 	return {
 		EventID.KEY_LEFT_EVENT : "updateDirection",
+		EventID.KEY_UP_EVENT : "updateDirection",
 		EventID.KEY_RIGHT_EVENT : "updateDirection",
 		EventID.KEY_DOWN_EVENT : "updateDirection",
+		EventID.KEY_SPACE_EVENT : "rotateItemList",
 	};
 
 class TetrisViewCtr(object):
@@ -100,7 +102,8 @@ class TetrisViewCtr(object):
 	def updateDirection(self, data):
 		direction = Direction.LEFT;
 		if data["hotKey"] == "UP":
-			direction = Direction.TOP;
+			# direction = Direction.TOP;
+			return; # 不处理向上的事件
 		elif data["hotKey"] == "RIGHT":
 			direction = Direction.RIGHT;
 		elif data["hotKey"] == "DOWN":
@@ -171,3 +174,10 @@ class TetrisViewCtr(object):
 		if self.getUI().isPlaying() and self.getUI().isRunningTimer():
 			return True;
 		return False;
+
+	def stopGame(self):
+		self.getUI().stopGame();
+
+	def rotateItemList(self, data):
+		if data["hotKey"] == "SPACE":
+			self.getUI().rotateItemList();

@@ -16,4 +16,5 @@ HotKeyConfig = {
 	"UP" : EventID.KEY_UP_EVENT,
 	"RIGHT" : EventID.KEY_RIGHT_EVENT,
 	"DOWN" : EventID.KEY_DOWN_EVENT,
+	"SPACE" : EventID.KEY_SPACE_EVENT,
 };

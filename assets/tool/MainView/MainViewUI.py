@@ -103,6 +103,7 @@ class MainViewUI(wx.ScrolledWindow):
 			self.startGameBtn.SetLabel("暂停游戏");
 
 	def onRestartGame(self, ecent = None):
+		self.getCtr().getCtrByKey("TetrisViewCtr").stopGame()
 		self.onStartGame();
 
 	def initControlPanelLayout(self):
@@ -115,7 +116,8 @@ class MainViewUI(wx.ScrolledWindow):
 		self.contentPanel = wx.Panel(self, size = (600, max(600, self.GetSize().y)), style = wx.BORDER_THEME);
 		self.contentPanel.SetBackgroundColour(wx.Colour(0,0,0));
 		self.getCtr().createCtrByKey("TetrisViewCtr", GetPathByRelativePath("../view/TetrisView", self._curPath), parent = self.contentPanel, params = {
-			"size" : (580,580),
+			"size" : (360,580),
+			"matrix" : (29,18),
 		});
 		self.updateContentPanelSize();
 		self.initContentPanelLayout();

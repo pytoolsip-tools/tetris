@@ -18,3 +18,5 @@ class EVENT_ID(Enum):
 	KEY_RIGHT_EVENT = _GG("EVENT_ID").getNewId(); # 键盘键【右】
 
 	KEY_DOWN_EVENT = _GG("EVENT_ID").getNewId(); # 键盘键【下】
+
+	KEY_SPACE_EVENT = _GG("EVENT_ID").getNewId(); # 键盘键【空格】
