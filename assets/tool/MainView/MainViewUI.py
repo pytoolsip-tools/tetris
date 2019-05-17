@@ -61,12 +61,14 @@ class MainViewUI(wx.ScrolledWindow):
 		# self.getCtr().createCtrByKey("key", self._curPath + "***View"); # , parent = self, params = {}
 		self.createControlPanel();
 		self.createContentPanel();
+		self.createOtherPanel();
 		pass;
 		
 	def initViewLayout(self):
 		box = wx.BoxSizer(wx.HORIZONTAL);
 		box.Add(self.controlPanel);
 		box.Add(self.contentPanel);
+		box.Add(self.otherPanel);
 		self.SetSizerAndFit(box);
 
 	def resetScrollbars(self):
@@ -134,3 +136,39 @@ class MainViewUI(wx.ScrolledWindow):
 		topOffset = (self.contentPanel.GetSize().y - self.getCtr().getUIByKey("TetrisViewCtr").GetSize().y - 6) / 2;
 		box.Add(self.getCtr().getUIByKey("TetrisViewCtr"), flag = wx.ALIGN_CENTER|wx.TOP, border = topOffset);
 		self.contentPanel.SetSizer(box);
+
+	def createOtherPanel(self):
+		self.otherPanel = wx.Panel(self, size = (max(200, self.GetSize().x - 700), max(600, self.GetSize().y)), style = wx.BORDER_THEME);
+		self.createOtherViews(self.otherPanel);
+		self.updateOtherPanelSize();
+		self.initOtherPanelLayout();
+
+	def createOtherViews(self, parent):
+		self.getCtr().createCtrByKey("ScoreViewCtr", GetPathByRelativePath("../view/ScoreView", self._curPath), parent = parent, params = {"size" : (parent.GetSize().x, -1)}); # , parent = self, params = {}
+		scoreViewSize = self.getCtr().getUIByKey("ScoreViewCtr").GetSize();
+		self.getCtr().createCtrByKey("RuleViewCtr", GetPathByRelativePath("../view/RuleView", self._curPath), parent = parent, params = {
+			"size" : (scoreViewSize.x, parent.GetSize().y - scoreViewSize.y),
+		}); # , parent = self, params = {}
+
+	def updateOtherPanelSize(self):
+		otherPanelSize = self.otherPanel.GetSize();
+		scoreViewSize = self.getCtr().getUIByKey("ScoreViewCtr").GetSize();
+		ruleViewSize = self.getCtr().getUIByKey("RuleViewCtr").GetSize();
+		newSizeX = max(otherPanelSize.x, scoreViewSize.x, ruleViewSize.x);
+		newSizeY = max(self.controlPanel.GetSize().y, self.contentPanel.GetSize().y, otherPanelSize.y, scoreViewSize.y + ruleViewSize.y);
+		self.otherPanel.SetSize(newSizeX, newSizeY);
+
+	def initOtherPanelLayout(self):
+		box = wx.BoxSizer(wx.VERTICAL);
+		topOffset = (self.otherPanel.GetSize().y - self.getCtr().getUIByKey("ScoreViewCtr").GetSize().y - self.getCtr().getUIByKey("RuleViewCtr").GetSize().y) / 2;
+		box.Add(self.getCtr().getUIByKey("ScoreViewCtr"), flag = wx.ALIGN_CENTER|wx.TOP, border = topOffset);
+		box.Add(self.getCtr().getUIByKey("RuleViewCtr"), flag = wx.ALIGN_CENTER);
+		self.otherPanel.SetSizer(box);
+
+	# def initViewEvents(self):
+	# 	self.getCtr().getUIByKey("SnakeViewCtr").onAddScore = self.onAddScore;
+
+	# def onAddScore(self, score):
+	# 	self.getCtr().getUIByKey("ScoreViewCtr").addScore(score);
+	# 	if self.getCtr().checkUpgradeRate(self.getCtr().getUIByKey("ScoreViewCtr").getScore()):
+	# 		self.getCtr().getUIByKey("SnakeViewCtr").upgradeRate();
