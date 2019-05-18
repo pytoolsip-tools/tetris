@@ -26,19 +26,15 @@ class RuleViewUI(wx.Panel):
 			"size" : (-1,-1),
 			"style" : wx.BORDER_THEME,
 			"scoreRuleTextList" : [
-				"0-10分 -> 1倍始速",
-				"10-30分 -> 2倍始速",
-				"30-60分 -> 3倍始速",
-				"60-100分 -> 4倍始速",
-				"100-200分 -> 5倍始速",
-				"200-400分 -> 6倍始速",
-				"400-600分 -> 7倍始速",
-				"600-800分 -> 8倍始速",
-				"800-1000分 -> 9倍始速",
-				">1000分 -> 10倍始速",
+				"消除1行 -> +2分",
+				"连续消除2行 -> +6分",
+				"连续消除3行 -> +12分",
+				"连续消除4行 -> +20分",
+				"连续消除>4行 -> +999999分",
 			],
 			"ruleTextList" : [
-				"当铺满1行方块后，会自动消除，并+2分",
+				"每+1秒，提速0.05%",
+				"每消除1行，提速2%",
 			],
 		};
 		for k,v in params.items():
@@ -65,7 +61,7 @@ class RuleViewUI(wx.Panel):
 		pass;
 
 	def createScoreRule(self):
-		scoreRuleTitle = wx.StaticText(self, label = "分数加速：");
+		scoreRuleTitle = wx.StaticText(self, label = "分数计算：");
 		scoreRuleTitle.SetFont(wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD));
 		self.__itemInfoList.append((scoreRuleTitle, 0, wx.TOP, 10));
 		for scoreRuleText in self.__params["scoreRuleTextList"]:
@@ -73,7 +69,7 @@ class RuleViewUI(wx.Panel):
 			self.__itemInfoList.append((scoreRuleContent, 0, wx.LEFT|wx.TOP, 4));
 
 	def createRuleText(self):
-		ruleTitle = wx.StaticText(self, label = "规则：");
+		ruleTitle = wx.StaticText(self, label = "加速规则：");
 		ruleTitle.SetFont(wx.Font(16, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD));
 		self.__itemInfoList.append((ruleTitle, 0, wx.TOP, 20));
 		for ruleText in self.__params["ruleTextList"]:

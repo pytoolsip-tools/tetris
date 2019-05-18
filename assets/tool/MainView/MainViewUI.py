@@ -17,6 +17,8 @@ class MainViewUI(wx.ScrolledWindow):
 		self._className_ = MainViewUI.__name__;
 		self._curPath = curPath;
 		self.__viewCtr = viewCtr;
+		self.__isStarted = False;
+		self.__SpendSeconds = 0;
 		self.bindEvents(); # 绑定事件
 		self.SetBackgroundColour(self.__params["bgColour"]);
 		# 初始化滚动条参数
@@ -99,13 +101,17 @@ class MainViewUI(wx.ScrolledWindow):
 	def onStartGame(self, event = None):
 		if self.getCtr().getCtrByKey("TetrisViewCtr").isRunning():
 			self.getCtr().getCtrByKey("TetrisViewCtr").pauseGame();
+			self.getCtr().getUIByKey("TimingViewCtr").stopTimer();
 			self.startGameBtn.SetLabel("开始游戏");
 		else:
 			self.getCtr().getCtrByKey("TetrisViewCtr").startGame();
+			self.getCtr().getUIByKey("TimingViewCtr").startTimer(isReset = (not self.__isStarted));
 			self.startGameBtn.SetLabel("暂停游戏");
+			self.__isStarted = True;
 
 	def onRestartGame(self, ecent = None):
-		self.getCtr().getCtrByKey("TetrisViewCtr").stopGame()
+		self.__isStarted = False;
+		self.getCtr().getCtrByKey("TetrisViewCtr").stopGame();
 		self.onStartGame();
 
 	def initControlPanelLayout(self):
@@ -117,25 +123,36 @@ class MainViewUI(wx.ScrolledWindow):
 	def createContentPanel(self):
 		self.contentPanel = wx.Panel(self, size = (600, max(600, self.GetSize().y)), style = wx.BORDER_THEME);
 		self.contentPanel.SetBackgroundColour(wx.Colour(0,0,0));
+		# 创建俄罗斯方块视图
 		self.getCtr().createCtrByKey("TetrisViewCtr", GetPathByRelativePath("../view/TetrisView", self._curPath), parent = self.contentPanel, params = {
-			"size" : (320,600),
-			"matrix" : (30,16),
-			"onSetNextItemMt" : self.onUpdateNext,
+			"size" : (300,580),
+			"matrix" : (29,15),
+			"onSetNext" : self.onUpdateNext,
+			"onEliminate" : self.onAddScore,
+			"onGameOver" : self.onGameOver,
 		});
+		# 创建时间视图
+		self.getCtr().createCtrByKey("TimingViewCtr", GetPathByRelativePath("../view/TimingView", self._curPath), parent = self.contentPanel, params = {
+			"size" : (self.contentPanel.GetSize().x, -1),
+			"onTimer" : self.onTimerCallback,
+		});
+		# 调整布局
 		self.updateContentPanelSize();
 		self.initContentPanelLayout();
 
 	def updateContentPanelSize(self):
 		contentPanelSize = self.contentPanel.GetSize();
 		tetrisViewSize = self.getCtr().getUIByKey("TetrisViewCtr").GetSize();
-		newSizeX = max(contentPanelSize.x, tetrisViewSize.x);
-		newSizeY = max(self.controlPanel.GetSize().y, contentPanelSize.y, tetrisViewSize.y);
+		timingViewSize = self.getCtr().getUIByKey("TimingViewCtr").GetSize();
+		newSizeX = max(contentPanelSize.x, tetrisViewSize.x, timingViewSize.x);
+		newSizeY = max(self.controlPanel.GetSize().y, contentPanelSize.y, tetrisViewSize.y + timingViewSize.y);
 		self.contentPanel.SetSize(newSizeX, newSizeY);
 
 	def initContentPanelLayout(self):
 		box = wx.BoxSizer(wx.VERTICAL);
-		topOffset = (self.contentPanel.GetSize().y - self.getCtr().getUIByKey("TetrisViewCtr").GetSize().y - 6) / 2;
-		box.Add(self.getCtr().getUIByKey("TetrisViewCtr"), flag = wx.ALIGN_CENTER|wx.TOP, border = topOffset);
+		topOffset = (self.contentPanel.GetSize().y - self.getCtr().getUIByKey("TetrisViewCtr").GetSize().y - self.getCtr().getUIByKey("TimingViewCtr").GetSize().y - 6) / 2;
+		box.Add(self.getCtr().getUIByKey("TimingViewCtr"), flag = wx.ALIGN_CENTER|wx.TOP, border = topOffset);
+		box.Add(self.getCtr().getUIByKey("TetrisViewCtr"), flag = wx.ALIGN_CENTER);
 		self.contentPanel.SetSizer(box);
 
 	def createOtherPanel(self):
@@ -167,7 +184,7 @@ class MainViewUI(wx.ScrolledWindow):
 
 	def initOtherPanelLayout(self):
 		box = wx.BoxSizer(wx.VERTICAL);
-		topOffset = (self.otherPanel.GetSize().y - self.getCtr().getUIByKey("ScoreViewCtr").GetSize().y - self.getCtr().getUIByKey("RuleViewCtr").GetSize().y) / 2;
+		topOffset = (self.otherPanel.GetSize().y - self.getCtr().getUIByKey("ScoreViewCtr").GetSize().y - self.getCtr().getUIByKey("NextViewCtr").GetSize().y - self.getCtr().getUIByKey("RuleViewCtr").GetSize().y) / 2;
 		box.Add(self.getCtr().getUIByKey("ScoreViewCtr"), flag = wx.ALIGN_CENTER|wx.TOP, border = topOffset);
 		box.Add(self.getCtr().getUIByKey("NextViewCtr"), flag = wx.ALIGN_CENTER);
 		box.Add(self.getCtr().getUIByKey("RuleViewCtr"), flag = wx.ALIGN_CENTER);
@@ -181,7 +198,21 @@ class MainViewUI(wx.ScrolledWindow):
 				itemPosList.append([itemMt[0]+3, itemMt[1]+1]);
 			NextViewUI.updateNext(itemPosList = itemPosList)
 
-	# def onAddScore(self, score):
-	# 	self.getCtr().getUIByKey("ScoreViewCtr").addScore(score);
-	# 	if self.getCtr().checkUpgradeRate(self.getCtr().getUIByKey("ScoreViewCtr").getScore()):
-	# 		self.getCtr().getUIByKey("SnakeViewCtr").upgradeRate();
+	def onAddScore(self, eliminateCount = 0):
+		if eliminateCount > 0:
+			# 更新分数
+			self.getCtr().getUIByKey("ScoreViewCtr").addScore(self.getCtr().getScoreByCount(eliminateCount));
+			# 提升速度
+			self.getCtr().getUIByKey("TetrisViewCtr").toSpeedUp((1 - self.getCtr().getSpeedConfig("eliminate", 0.02)) ** eliminateCount);
+
+	def onGameOver(self):
+		self.startGameBtn.SetLabel("开始游戏");
+		self.getCtr().getUIByKey("TimingViewCtr").stopTimer();
+		self.__isStarted = False;
+
+	def onTimerCallback(self, seconds = 0):
+		diffSeconds = seconds - self.__SpendSeconds;
+		if diffSeconds > 0:
+			timeConfig = self.getCtr().getSpeedConfig("time", {"seconds" : 1, "rate" : 0.0005});
+			self.__SpendSeconds = seconds + seconds % timeConfig["seconds"];
+			self.getCtr().getUIByKey("TetrisViewCtr").toSpeedUp((1 - timeConfig["rate"]) ** int(seconds / timeConfig["seconds"]));

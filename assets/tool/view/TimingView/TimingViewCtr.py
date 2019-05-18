@@ -1,31 +1,25 @@
 # -*- coding: utf-8 -*-
 # @Author: JimZhang
-# @Date:   2018-10-08 21:02:23
+# @Date:   2018-12-22 09:09:43
 # @Last Modified by:   JimDreamHeart
-# @Last Modified time: 2019-03-16 13:46:35
+# @Last Modified time: 2019-03-16 13:46:33
 import os;
 import wx;
 
 from _Global import _GG;
 
-from MainViewUI import *;
-
-CurPath = os.path.dirname(os.path.realpath(__file__)); # 当前文件目录
-
-require(GetPathByRelativePath("../", CurPath), "_load"); # 加载逻辑
-
-GameConfig = require(GetPathByRelativePath("../config", CurPath), "gameConfig", "GameConfig");
+from TimingViewUI import *;
 
 def getRegisterEventMap(G_EVENT):
 	return {
 		# G_EVENT.TO_UPDATE_VIEW : "updateView",
 	};
 
-class MainViewCtr(object):
-	"""docstring for MainViewCtr"""
+class TimingViewCtr(object):
+	"""docstring for TimingViewCtr"""
 	def __init__(self, parent, params = {}):
-		super(MainViewCtr, self).__init__();
-		self._className_ = MainViewCtr.__name__;
+		super(TimingViewCtr, self).__init__();
+		self._className_ = TimingViewCtr.__name__;
 		self._curPath = os.path.dirname(os.path.realpath(__file__)).replace("\\", "/") + "/";
 		self.__CtrMap = {}; # 所创建的控制器
 		self.initUI(parent, params); # 初始化视图UI
@@ -52,7 +46,7 @@ class MainViewCtr(object):
 
 	def initUI(self, parent, params):
 		# 创建视图UI类
-		self.__ui = MainViewUI(parent, curPath = self._curPath, viewCtr = self, params = params);
+		self.__ui = TimingViewUI(parent, curPath = self._curPath, viewCtr = self, params = params);
 		self.__ui.initView();
 
 	def getUI(self):
@@ -96,14 +90,3 @@ class MainViewCtr(object):
 			
 	def updateView(self, data):
 		self.__ui.updateView(data);
-
-	def getSpeedConfig(self, sType = "eliminate", defaultVal = None):
-		speedConfig = GameConfig.get("speedConfig");
-		return speedConfig.get(sType, defaultVal);
-
-	def getScoreByCount(self, count):
-		scoreConfig = GameConfig.get("scoreConfig", [0]);
-		if count > len(scoreConfig):
-			return scoreConfig[0];
-		return scoreConfig[count];
-		scoreRuleTextList = [];

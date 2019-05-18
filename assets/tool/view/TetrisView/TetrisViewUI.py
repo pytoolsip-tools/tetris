@@ -7,6 +7,7 @@
 import wx;
 import random, math;
 from enum import Enum, unique;
+from datetime import datetime;
 
 from _Global import _GG;
 from function.base import *;
@@ -27,11 +28,13 @@ class TetrisViewUI(wx.Panel):
 		self._curPath = curPath;
 		self.__viewCtr = viewCtr;
 		self.init();
+		self.createTimer();
+		self.SetBackgroundColour(self.__params["bgColour"]);
 
 	def init(self):
-		self.SetBackgroundColour(self.__params["bgColour"]);
-		self.createTimer();
 		self.__playing = False; # 游戏进行中的标记
+		self.__isSpeedUp = False; # 升速的标记位
+		self.__timeDuration = 400; # 每次移动的时间
 		self.__fixedItemMatrix = []; # 已固定的方块矩阵
 		self.__movingItemList = []; # 移动中的方块列表
 		self.__nextItemMtList = [];
@@ -47,7 +50,9 @@ class TetrisViewUI(wx.Panel):
 			"bgColour" : wx.Colour(255,255,255),
 			"matrix" : (36,36),
 			"squareColour" : wx.Colour(0,0,0),
-			"onSetNextItemMt" : None,
+			"onSetNext" : None,
+			"onEliminate" : None,
+			"onGameOver" : None,
 		};
 		for k,v in params.items():
 			self.__params[k] = v;
@@ -73,8 +78,8 @@ class TetrisViewUI(wx.Panel):
 		curItemMtList = self.__nextItemMtList;
 		col = int(self.__params["matrix"][1]/2);
 		self.__nextItemMtList = self.getCtr().getMovingItemPosList((0, 0));
-		if callable(self.__params.get("onSetNextItemMt", None)):
-			self.__params["onSetNextItemMt"](self.__nextItemMtList);
+		if callable(self.__params.get("onSetNext", None)):
+			self.__params["onSetNext"](self.__nextItemMtList);
 		for itemMt in self.__nextItemMtList:
 			itemMt[1] += col;
 		return curItemMtList;
@@ -89,10 +94,11 @@ class TetrisViewUI(wx.Panel):
 
 	def createTimer(self):
 		self.__timer = wx.Timer(self);
+		self.__curTimer = datetime.now();
 		self.Bind(wx.EVT_TIMER, self.onTimer, self.__timer);
 
 	def startTimer(self):
-		self.__timer.Start(300);
+		self.__timer.Start(self.__timeDuration);
 
 	def stopTimer(self):
 		if self.__timer.IsRunning():
@@ -100,6 +106,10 @@ class TetrisViewUI(wx.Panel):
 
 	def onTimer(self, event = None):
 		self.moveItemList();
+		if self.__isSpeedUp:
+			self.startTimer();
+			self.__isSpeedUp = False;
+		self.checkToFocusSelf(); # 检测是否重新对焦自己
 
 	def getItemSize(self):
 		rows, cols = self.__params["matrix"][0], self.__params["matrix"][1];
@@ -116,7 +126,6 @@ class TetrisViewUI(wx.Panel):
 	# 移动方块
 	def moveItemList(self, direction = Direction.BOTTOM):
 		if self.__playing:
-			self.SetFocusFromKbd(); # 移动时，重新对焦self
 			if self.checkDirection(direction):
 				for item in self.__movingItemList:
 					row, col = item.m_mt;
@@ -197,6 +206,8 @@ class TetrisViewUI(wx.Panel):
 			else:
 				# 若该行不存在方块，则跳出该循环
 				break;
+		if callable(self.__params.get("onEliminate", None)):
+			self.__params["onEliminate"](eliminateCount);
 
 	# 旋转方块
 	def rotateItemList(self):
@@ -229,9 +240,12 @@ class TetrisViewUI(wx.Panel):
 
 	def onGameOver(self):
 		self.stopTimer();
-		self.__playing = False;
+		if callable(self.__params.get("onGameOver", None)):
+			self.__params["onGameOver"]();
 		msgDialog = wx.MessageDialog(self, "游戏结束！", "游戏结束", style = wx.OK|wx.ICON_INFORMATION);
 		msgDialog.ShowModal();
+		# 停止游戏并清除界面
+		self.stopGame();
 
 	def resetFixedItemMt(self):
 		for items in self.__fixedItemMatrix:
@@ -266,4 +280,16 @@ class TetrisViewUI(wx.Panel):
 		self.stopTimer();
 		self.resetFixedItemMt();
 		self.resetMovingItemList();
-		self.__playing = False;
+		self.init();
+
+	def toSpeedUp(self, rate = 0.8):
+		self.__timeDuration = self.__timeDuration * rate;
+		self.__isSpeedUp = True;
+
+	def checkToFocusSelf(self):
+		nowTime = datetime.now();
+		diffDataTime = nowTime - self.__curTimer;
+		diffSeconds = diffDataTime.seconds;
+		if diffSeconds >= 1:
+			self.SetFocusFromKbd(); # 时间回调时，
+			self.__curTimer = nowTime;
