@@ -15,8 +15,8 @@ GameConfig = {
 	],
 	"speedConfig" : {
 		"time" : {
-			"seconds" : 1,
-			"rate" : 0.0005,
+			"seconds" : 10,
+			"rate" : 0.001,
 		},
 		"eliminate" : 0.02,
 	},

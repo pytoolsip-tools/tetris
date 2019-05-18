@@ -31,6 +31,17 @@ class TetrisViewUI(wx.Panel):
 		self.createTimer();
 		self.SetBackgroundColour(self.__params["bgColour"]);
 
+	def __del__(self):
+		self.__dest__();
+
+	def __dest__(self):
+		if not hasattr(self, "_unloaded_"):
+			self._unloaded_ = True;
+			self.__unload__();
+
+	def __unload__(self):
+		self.stopAllTimer(isDestroy = True); # 停止定时器
+
 	def init(self):
 		self.__playing = False; # 游戏进行中的标记
 		self.__isSpeedUp = False; # 升速的标记位
@@ -74,6 +85,11 @@ class TetrisViewUI(wx.Panel):
 	def updateView(self, data):
 		pass;
 
+	def stopAllTimer(self, isDestroy = False):
+		self.stopTimer();
+		if isDestroy:
+			_GG("TimerManager").deleteTimer(self.__timer);
+
 	def __setNextItemMtList__(self):
 		curItemMtList = self.__nextItemMtList;
 		col = int(self.__params["matrix"][1]/2);
@@ -93,9 +109,8 @@ class TetrisViewUI(wx.Panel):
 			self.__fixedItemMatrix.append(fixedItemList); # 已固定的方块矩阵
 
 	def createTimer(self):
-		self.__timer = wx.Timer(self);
+		self.__timer = _GG("TimerManager").createTimer(self, callback = self.onTimer);
 		self.__curTimer = datetime.now();
-		self.Bind(wx.EVT_TIMER, self.onTimer, self.__timer);
 
 	def startTimer(self):
 		self.__timer.Start(self.__timeDuration);
