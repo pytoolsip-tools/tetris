@@ -110,57 +110,57 @@ class TetrisViewCtr(object):
 			direction = Direction.BOTTOM;
 		self.getUI().moveItemList(direction);
 
-	def getMovingItemMtList(self, startPos, key = None):
+	def getMovingItemPosList(self, startPos, key = None):
 		if not key:
 			key = random.choice(["I", "J", "L", "O", "S", "Z", "T"]);
 		if key == "I":
 			return [
-				(startPos[0]-3, startPos[1]),
-				(startPos[0]-2, startPos[1]),
-				(startPos[0]-1, startPos[1]),
-				(startPos[0], startPos[1])
+				[startPos[0]-3, startPos[1]],
+				[startPos[0]-2, startPos[1]],
+				[startPos[0]-1, startPos[1]],
+				[startPos[0], startPos[1]]
 			];
 		elif key == "J":
 			return [
-				(startPos[0]-2, startPos[1]),
-				(startPos[0]-1, startPos[1]),
-				(startPos[0], startPos[1]),
-				(startPos[0], startPos[1]-1),
+				[startPos[0]-2, startPos[1]],
+				[startPos[0]-1, startPos[1]],
+				[startPos[0], startPos[1]],
+				[startPos[0], startPos[1]-1],
 			];
 		elif key == "L":
 			return [
-				(startPos[0]-2, startPos[1]),
-				(startPos[0]-1, startPos[1]),
-				(startPos[0], startPos[1]),
-				(startPos[0], startPos[1]+1),
+				[startPos[0]-2, startPos[1]],
+				[startPos[0]-1, startPos[1]],
+				[startPos[0], startPos[1]],
+				[startPos[0], startPos[1]+1],
 			];
 		elif key == "O":
 			return [
-				(startPos[0]-1, startPos[1]),
-				(startPos[0]-1, startPos[1]+1),
-				(startPos[0], startPos[1]),
-				(startPos[0], startPos[1]+1),
+				[startPos[0]-1, startPos[1]],
+				[startPos[0]-1, startPos[1]+1],
+				[startPos[0], startPos[1]],
+				[startPos[0], startPos[1]+1],
 			];
 		elif key == "S":
 			return [
-				(startPos[0]-1, startPos[1]+1),
-				(startPos[0]-1, startPos[1]),
-				(startPos[0], startPos[1]),
-				(startPos[0], startPos[1]-1),
+				[startPos[0]-1, startPos[1]+1],
+				[startPos[0]-1, startPos[1]],
+				[startPos[0], startPos[1]],
+				[startPos[0], startPos[1]-1],
 			];
 		elif key == "Z":
 			return [
-				(startPos[0]-1, startPos[1]-1),
-				(startPos[0]-1, startPos[1]),
-				(startPos[0], startPos[1]),
-				(startPos[0], startPos[1]+1),
+				[startPos[0]-1, startPos[1]-1],
+				[startPos[0]-1, startPos[1]],
+				[startPos[0], startPos[1]],
+				[startPos[0], startPos[1]+1],
 			];
 		elif key == "T":
 			return [
-				(startPos[0]-1, startPos[1]-1),
-				(startPos[0]-1, startPos[1]),
-				(startPos[0]-1, startPos[1]+1),
-				(startPos[0], startPos[1]),
+				[startPos[0]-1, startPos[1]-1],
+				[startPos[0]-1, startPos[1]],
+				[startPos[0]-1, startPos[1]+1],
+				[startPos[0], startPos[1]],
 			];
 		raise Exception("Error key[{}]".format(key));
 

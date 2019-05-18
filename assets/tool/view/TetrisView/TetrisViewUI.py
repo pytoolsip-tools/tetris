@@ -34,7 +34,9 @@ class TetrisViewUI(wx.Panel):
 		self.__playing = False; # 游戏进行中的标记
 		self.__fixedItemMatrix = []; # 已固定的方块矩阵
 		self.__movingItemList = []; # 移动中的方块列表
-		self.__initFixedItemMatrix();
+		self.__nextItemMtList = [];
+		self.__setNextItemMtList__();
+		self.__initFixedItemMatrix__();
 
 	def initParams(self, params):
 		# 初始化参数
@@ -45,6 +47,7 @@ class TetrisViewUI(wx.Panel):
 			"bgColour" : wx.Colour(255,255,255),
 			"matrix" : (36,36),
 			"squareColour" : wx.Colour(0,0,0),
+			"onSetNextItemMt" : None,
 		};
 		for k,v in params.items():
 			self.__params[k] = v;
@@ -66,8 +69,18 @@ class TetrisViewUI(wx.Panel):
 	def updateView(self, data):
 		pass;
 
+	def __setNextItemMtList__(self):
+		curItemMtList = self.__nextItemMtList;
+		col = int(self.__params["matrix"][1]/2);
+		self.__nextItemMtList = self.getCtr().getMovingItemPosList((0, 0));
+		if callable(self.__params.get("onSetNextItemMt", None)):
+			self.__params["onSetNextItemMt"](self.__nextItemMtList);
+		for itemMt in self.__nextItemMtList:
+			itemMt[1] += col;
+		return curItemMtList;
+
 	# 初始化固定方块矩阵
-	def __initFixedItemMatrix(self):
+	def __initFixedItemMatrix__(self):
 		for i in range(self.__params["matrix"][0]):
 			fixedItemList = [];
 			for j in range(self.__params["matrix"][1]):
@@ -123,8 +136,7 @@ class TetrisViewUI(wx.Panel):
 	# 创建移动方块
 	def createMovingItemList(self):
 		self.__movingItemList = [];
-		col = int(self.__params["matrix"][1]/2);
-		itemMtList = self.getCtr().getMovingItemMtList((0, col));
+		itemMtList = self.__setNextItemMtList__();
 		for itemMt in itemMtList:
 			item = self.createItem();
 			item.SetBackgroundColour(self.__params["squareColour"]);

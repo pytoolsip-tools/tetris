@@ -120,6 +120,7 @@ class MainViewUI(wx.ScrolledWindow):
 		self.getCtr().createCtrByKey("TetrisViewCtr", GetPathByRelativePath("../view/TetrisView", self._curPath), parent = self.contentPanel, params = {
 			"size" : (320,600),
 			"matrix" : (30,16),
+			"onSetNextItemMt" : self.onUpdateNext,
 		});
 		self.updateContentPanelSize();
 		self.initContentPanelLayout();
@@ -146,27 +147,39 @@ class MainViewUI(wx.ScrolledWindow):
 	def createOtherViews(self, parent):
 		self.getCtr().createCtrByKey("ScoreViewCtr", GetPathByRelativePath("../view/ScoreView", self._curPath), parent = parent, params = {"size" : (parent.GetSize().x, -1)}); # , parent = self, params = {}
 		scoreViewSize = self.getCtr().getUIByKey("ScoreViewCtr").GetSize();
+		itemSizeX = 10;
+		if parent.GetSize().x/4 < itemSizeX:
+			itemSizeX = parent.GetSize().x/4;
+		self.getCtr().createCtrByKey("NextViewCtr", GetPathByRelativePath("../view/NextView", self._curPath), parent = parent, params = {"size" : (parent.GetSize().x, -1), "itemSize" : (itemSizeX, itemSizeX)}); # , parent = self, params = {}
+		nextViewSize = self.getCtr().getUIByKey("NextViewCtr").GetSize();
 		self.getCtr().createCtrByKey("RuleViewCtr", GetPathByRelativePath("../view/RuleView", self._curPath), parent = parent, params = {
-			"size" : (scoreViewSize.x, parent.GetSize().y - scoreViewSize.y),
-		}); # , parent = self, params = {}
+			"size" : (scoreViewSize.x, parent.GetSize().y - scoreViewSize.y - nextViewSize.y),
+		});
 
 	def updateOtherPanelSize(self):
 		otherPanelSize = self.otherPanel.GetSize();
 		scoreViewSize = self.getCtr().getUIByKey("ScoreViewCtr").GetSize();
+		nextViewSize = self.getCtr().getUIByKey("NextViewCtr").GetSize();
 		ruleViewSize = self.getCtr().getUIByKey("RuleViewCtr").GetSize();
-		newSizeX = max(otherPanelSize.x, scoreViewSize.x, ruleViewSize.x);
-		newSizeY = max(self.controlPanel.GetSize().y, self.contentPanel.GetSize().y, otherPanelSize.y, scoreViewSize.y + ruleViewSize.y);
+		newSizeX = max(otherPanelSize.x, scoreViewSize.x, nextViewSize.x, ruleViewSize.x);
+		newSizeY = max(self.controlPanel.GetSize().y, self.contentPanel.GetSize().y, otherPanelSize.y, scoreViewSize.y + nextViewSize.y + ruleViewSize.y);
 		self.otherPanel.SetSize(newSizeX, newSizeY);
 
 	def initOtherPanelLayout(self):
 		box = wx.BoxSizer(wx.VERTICAL);
 		topOffset = (self.otherPanel.GetSize().y - self.getCtr().getUIByKey("ScoreViewCtr").GetSize().y - self.getCtr().getUIByKey("RuleViewCtr").GetSize().y) / 2;
 		box.Add(self.getCtr().getUIByKey("ScoreViewCtr"), flag = wx.ALIGN_CENTER|wx.TOP, border = topOffset);
+		box.Add(self.getCtr().getUIByKey("NextViewCtr"), flag = wx.ALIGN_CENTER);
 		box.Add(self.getCtr().getUIByKey("RuleViewCtr"), flag = wx.ALIGN_CENTER);
 		self.otherPanel.SetSizer(box);
 
-	# def initViewEvents(self):
-	# 	self.getCtr().getUIByKey("SnakeViewCtr").onAddScore = self.onAddScore;
+	def onUpdateNext(self, itemMtList = []):
+		NextViewUI = self.getCtr().getUIByKey("NextViewCtr");
+		if NextViewUI:
+			itemPosList = [];
+			for itemMt in itemMtList:
+				itemPosList.append([itemMt[0]+3, itemMt[1]+1]);
+			NextViewUI.updateNext(itemPosList = itemPosList)
 
 	# def onAddScore(self, score):
 	# 	self.getCtr().getUIByKey("ScoreViewCtr").addScore(score);
