@@ -105,7 +105,7 @@ class MainViewUI(wx.ScrolledWindow):
 			self.startGameBtn.SetLabel("开始游戏");
 		else:
 			self.getCtr().getCtrByKey("TetrisViewCtr").startGame();
-			self.getCtr().getUIByKey("TimingViewCtr").startTimer(isReset = (not self.__isStarted));
+			self.getCtr().getUIByKey("TimingViewCtr").startTimer(isReset = not self.__isStarted);
 			self.startGameBtn.SetLabel("暂停游戏");
 			self.__isStarted = True;
 
